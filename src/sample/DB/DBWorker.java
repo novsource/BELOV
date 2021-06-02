@@ -56,25 +56,25 @@ public class DBWorker {
 
     public void addClient(Client client) throws SQLException {
         PreparedStatement preparedStatement = connection.prepareStatement("INSERT INTO Client ('client_FIO', 'client_phone_number')" + "VALUES(?, ?)");
-        preparedStatement.setObject(1, client.getName());
-        preparedStatement.setObject(2, client.getPhoneNumber());
+        preparedStatement.setString(1, client.getName());
+        preparedStatement.setString(2, client.getPhoneNumber());
         preparedStatement.execute();
         preparedStatement.close();
     }
 
     public void editClient(Client client) throws SQLException {
-        PreparedStatement preparedStatement = connection.prepareStatement("UPDATE Client SET ('client_FIO', 'client_phone_number') = (?, ?) " +
-                "WHERE client_id =" + client.getId());
-        preparedStatement.setObject(1, client.getName());
-        preparedStatement.setObject(2, client.getPhoneNumber());
+        PreparedStatement preparedStatement = connection.prepareStatement("UPDATE Client SET ('client_FIO', 'client_phone_number') = (?,?)\n" +
+                "WHERE client_id = " + client.getId());
+        preparedStatement.setString(1, client.getName());
+        preparedStatement.setString(2, client.getPhoneNumber());
         preparedStatement.execute();
         preparedStatement.close();
     }
 
     public void deleteClient(Client client) throws SQLException {
         Statement statement = connection.createStatement();
-        statement.execute("DELETE FROM authors WHERE client.id =" + client.getId());
-        System.out.println("deleted!");
+        statement.execute("DELETE FROM Client WHERE client_id =" + client.getId());
+        System.out.println("Запись удалена");
         statement.close();
     }
 
@@ -88,19 +88,21 @@ public class DBWorker {
     }
 
     public static void addDiscount(Discount discount) throws SQLException {
-        PreparedStatement preparedStatement = connection.prepareStatement("INSERT INTO Discount ('discount_pers')"
-                + "VALUES(?)");
-        preparedStatement.setObject(1, discount.getValue());
+        PreparedStatement preparedStatement = connection.prepareStatement("INSERT INTO Discount ('discount_pers', 'criteria_id')"
+                + "VALUES(?, ?)");
+        preparedStatement.setInt(1, discount.getValue());
+        preparedStatement.setInt(2, discount.getCriteria());
 
         preparedStatement.execute();
         preparedStatement.close();
     }
 
     public static void editDiscount(Discount discount) throws SQLException {
-        PreparedStatement preparedStatement = connection.prepareStatement("UPDATE Discount SET ('discount_pers') = (?,?) " +
+        PreparedStatement preparedStatement = connection.prepareStatement("UPDATE Discount SET ('discount_pers', 'criteria_id') = (?, ?) " +
                 "WHERE discount.id=" + discount.getId());
 
         preparedStatement.setObject(1, discount.getValue());
+        preparedStatement.setObject(2, discount.getCriteria());
 
         preparedStatement.execute();
         preparedStatement.close();
@@ -108,11 +110,10 @@ public class DBWorker {
 
     public void deleteDiscount(Discount discount) throws SQLException {
         Statement statement = connection.createStatement();
-        statement.execute("DELETE FROM Discount WHERE Discount.id =" + discount.getId());
+        statement.execute("DELETE FROM Discount WHERE discount_id =" + discount.getId());
         System.out.println("deleted!");
         statement.close();
     }
-
 
     public static List<Client> getAllClients() throws SQLException {
         Statement statement = connection.createStatement();
@@ -132,13 +133,24 @@ public class DBWorker {
         ArrayList<Discount> discounts = new ArrayList<Discount>();
         ResultSet resultSet = statement.executeQuery("SELECT * FROM Discount");
         while (resultSet.next()) {
-            discounts.add(new Discount(resultSet.getInt("discount_id"), resultSet.getInt("discount_pers")));
+            discounts.add(new Discount(resultSet.getInt("discount_id"), resultSet.getInt("criteria_id"), resultSet.getInt("discount_pers")));
         }
         resultSet.close();
         statement.close();
         return discounts;
     }
 
+    public static List<Integer> getCriteriaDiscount() throws SQLException {
+        Statement statement = connection.createStatement();
+        ArrayList<Integer> criteriaList = new ArrayList<>();
 
+        ResultSet resultSet = statement.executeQuery("SELECT criteria_id FROM Criteria");
+        while (resultSet.next()) {
+            criteriaList.add(resultSet.getInt("criteria_id"));
+        }
+        resultSet.close();
+        statement.close();
+        return criteriaList;
+    }
 
 }

@@ -144,10 +144,10 @@ public class Controller {
             }
     }
 
-    /*public Author getAuthorOfSelectedLibraryItemCB(LibraryItem item) throws SQLException {
-        ObservableList<Author> list = FXCollections.observableArrayList(DBWorker.getAllAuthors());
-        for (Author auth : list) {
-            if (auth.getId() == DBWorker.getAuthorId(item.getAuthor())) {
+    /*public int getCriteriaOfSelectedDiscount(Discount item) throws SQLException {
+        ObservableList<Discount> list = FXCollections.observableArrayList(DBWorker.getAllDiscount());
+        for (Discount auth : list) {
+            if (auth.getId() == DBWorker.getDiscountId(item.getCriteria())) {
                 return auth;
             }
         }

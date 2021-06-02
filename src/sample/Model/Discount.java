@@ -2,7 +2,14 @@ package sample.Model;
 
 public class Discount {
     private int id;
+    private int criteria;
     private int value;
+
+    public Discount(int id, int criteria, int value) {
+        this.id = id;
+        this.criteria = criteria;
+        this.value = value;
+    }
 
     public Discount(int id, int value) {
         this.id = id;
@@ -23,6 +30,14 @@ public class Discount {
 
     public void setValue(int value) {
         this.value = value;
+    }
+
+    public int getCriteria() {
+        return criteria;
+    }
+
+    public void setCriteria(int criteria) {
+        this.criteria = criteria;
     }
 
     @Override

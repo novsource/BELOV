@@ -108,8 +108,8 @@ public class AddWindow {
         // Добавление скидки
         TextField discountPersTextField = new TextField();
 
-        /*ObservableList<Author> authors = FXCollections.observableArrayList(DBWorker.getAllAuthors());
-        ComboBox<Author> authorComboBox = new ComboBox<>(authors);*/
+        ObservableList<Integer> criteria = FXCollections.observableArrayList(DBWorker.getCriteriaDiscount());
+        ComboBox<Integer> criteriaComboBox = new ComboBox<>(criteria);
 
         Button editButton = new Button("Изменить");
 
@@ -123,7 +123,8 @@ public class AddWindow {
 
             nameTextField.setText(client.getName());
             numberTextField.setText(client.getPhoneNumber());
-            //authorComboBox.getSelectionModel().select(controller.getAuthorOfSelectedLibraryItemCB(item));
+
+            this.tableChoiceCB.setDisable(true);
 
             this.gridPane.add(nameTextField, 1, 1);
             this.gridPane.add(numberTextField , 1, 2);
@@ -136,11 +137,16 @@ public class AddWindow {
 
             Discount discount = (Discount) object;
 
+            criteriaComboBox.getSelectionModel().select(criteria.indexOf(discount.getCriteria()));
+            Label criteriaTB = new Label("Выберите критерий скидки: ");
+
             this.tableChoiceCB.setDisable(true);
 
             discountPersTextField.setText(String.valueOf(discount.getValue()));
             this.gridPane.add(discountPersTextField, 1,1);
-            this.gridPane.add(editButton, 0, 2);
+            this.gridPane.add(criteriaTB, 0,2);
+            this.gridPane.add(criteriaComboBox, 1, 2);
+            this.gridPane.add(editButton, 0, 3);
         }
 
         editButton.setOnAction(new EventHandler<ActionEvent>() {
@@ -176,8 +182,6 @@ public class AddWindow {
         this.gridPane.add(numberLabel, 0, 2);
 
     }
-
-
 
     private void discountForm() {
         this.gridPane = defaultGridPane();
