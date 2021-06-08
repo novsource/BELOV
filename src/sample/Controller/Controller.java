@@ -70,7 +70,6 @@ public class Controller {
         return this.discounts;
     }
 
-
     public ObservableList<Client> buildClientTableData(TableView tableView) throws SQLException {
         this.clientsList = FXCollections.observableArrayList(DBWorker.getAllClients());
         tableView.setItems(this.clientsList);
@@ -85,6 +84,10 @@ public class Controller {
             }
     }*/
         return this.clientsList;
+    }
+
+    public ObservableList<Client> buildDiscountClientData() throws SQLException {
+        return FXCollections.observableArrayList(dbWorker.getDiscountsFromClient());
     }
 
     public void addData(Object addingObject, Stage windowForm) throws SQLException {

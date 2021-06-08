@@ -6,11 +6,29 @@ public class Bill {
     private Client client;
     private List<Dish> dishesList;
     private Discount discount;
+    private int price;
+    private String date;
 
-    public Bill(Client client, List<Dish> dishesList, Discount discount) {
+    public Bill(Client client, String date, int price) {
+        this.client = client;
+        this.date = date;
+        this.price = price;
+    }
+
+    public Bill(Client client, List<Dish> dishesList, Discount discount, int price, String date) {
         this.client = client;
         this.dishesList = dishesList;
         this.discount = discount;
+        this.price = price;
+        this.date = date;
+    }
+
+    public int getPrice() {
+        return price;
+    }
+
+    public String getDate() {
+        return date;
     }
 
     public Client getClient() {

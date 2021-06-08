@@ -5,7 +5,7 @@ public class Discount {
     private int criteria;
     private int value;
 
-    public Discount(int id, int criteria, int value) {
+    public Discount(int id, int value, int criteria) {
         this.id = id;
         this.criteria = criteria;
         this.value = value;

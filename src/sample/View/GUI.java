@@ -1,6 +1,7 @@
 package sample.View;
 
 import javafx.collections.FXCollections;
+import javafx.collections.ObservableList;
 import javafx.event.ActionEvent;
 import javafx.event.EventHandler;
 import javafx.geometry.Pos;
@@ -14,6 +15,7 @@ import javafx.scene.control.TextField;
 import javafx.scene.control.cell.PropertyValueFactory;
 import javafx.scene.input.ContextMenuEvent;
 import javafx.scene.input.KeyCombination;
+import javafx.scene.input.MouseEvent;
 import javafx.scene.layout.*;
 import javafx.stage.Modality;
 import javafx.stage.Stage;
@@ -23,6 +25,7 @@ import sample.Model.*;
 
 import java.awt.*;
 import java.sql.SQLException;
+import java.util.ArrayList;
 import java.util.Optional;
 
 public class GUI {
@@ -41,7 +44,7 @@ public class GUI {
 
     public GUI() throws SQLException {
         DBWorker.initDatabase(); //инициализируем БД
-        this.mainTable = new TableView<LibraryItem>(); //инициализируем главную таблицу
+        this.mainTable = new TableView<>(); //инициализируем главную таблицу
         createMainGridPane(); //создаем главную панель
     }
 
@@ -86,8 +89,9 @@ public class GUI {
         hBox.setHgrow(menu, Priority.ALWAYS);
 
         choiceTable.setItems(FXCollections.observableArrayList(DatabaseObjects.values()));
+        choiceTable.getItems().add("Клиенты со скидками");
 
-        /* Метод для смены типа отображаемого транспорта в таблице */
+
         choiceTable.getSelectionModel().selectedItemProperty().addListener((observableValue, oldValue, newValue) -> {
             if (DatabaseObjects.CLIENTS.equals(newValue)) {
                 try {
@@ -97,12 +101,23 @@ public class GUI {
                 } catch (SQLException throwables) {
                     throwables.printStackTrace();
                 }
-            } else if (DatabaseObjects.DISCOUNTS.equals(newValue)) {
+            }
+            else if (DatabaseObjects.DISCOUNTS.equals(newValue)) {
                 try {
                     searchField.setText("");
                     editDiscountTableView();
                     this.controller.tableDiscountFilter(mainTable.getItems(), searchField, mainTable);
                 } catch (SQLException e) {
+                    e.printStackTrace();
+                }
+            }
+            else if (newValue == "Клиенты со скидками") {
+                try {
+                    searchField.setText("");
+                    createDiscountClientTableView();
+                    this.controller.tableClientFilter(mainTable.getItems(), searchField, mainTable);
+                }
+                catch (SQLException e) {
                     e.printStackTrace();
                 }
             }
@@ -319,6 +334,65 @@ public class GUI {
 
     private void editClientTableView() throws SQLException {
 
+       /* mainTable.setRowFactory(tv -> {
+            TableRow<Client> row = new TableRow<>();
+            row.setOnMouseClicked(mouseEvent -> {
+                if (mouseEvent.getClickCount() == 2 && (!row.isEmpty()) ) {
+                    Client client = row.getItem();
+                    VisitsWindow visitsWindow = new VisitsWindow(controller, client);
+                    try {
+                        Stage window = visitsWindow.VisitsWindow();
+
+                        window.initModality(Modality.WINDOW_MODAL);
+
+                        window.initOwner(primaryStage);
+
+                        window.setX(primaryStage.getX());
+                        window.setY(primaryStage.getY());
+
+                        window.show();
+                    }
+                    catch (SQLException throwables) {
+                        throwables.printStackTrace();
+                    }
+
+                }
+            });
+            return row;
+        });*/
+
+        mainTable.setOnMousePressed(new EventHandler<MouseEvent>() {
+            @Override
+            public void handle(MouseEvent event) {
+                if (event.isPrimaryButtonDown() && event.getClickCount() == 2) {
+                    if (mainTable.getSelectionModel().getSelectedItem() instanceof Client) {
+                        Client client = (Client) mainTable.getSelectionModel().getSelectedItem();
+                        VisitsWindow visitsWindow = null;
+                        try {
+                            visitsWindow = new VisitsWindow(controller, client);
+                        } catch (SQLException throwables) {
+                            throwables.printStackTrace();
+                        }
+                        try {
+                            Stage window = visitsWindow.VisitsWindow();
+
+                            window.initModality(Modality.WINDOW_MODAL);
+
+                            window.initOwner(primaryStage);
+
+                            window.setX(primaryStage.getX());
+                            window.setY(primaryStage.getY());
+
+                            window.show();
+                        }
+                        catch (SQLException throwables) {
+                            throwables.printStackTrace();
+                        }
+                    }
+                }
+            }
+        });
+
         mainTable.setColumnResizePolicy(TableView.CONSTRAINED_RESIZE_POLICY);
 
         TableColumn<Client, Integer> idColumn = new TableColumn<>("id");
@@ -333,9 +407,10 @@ public class GUI {
 
         controller.buildClientTableData(this.mainTable);
 
+
     }
 
-    //-------------------------------- ТАБЛИЦА "ЖУРНАЛЫ" (magazines) --------------------------------
+    //-------------------------------- ТАБЛИЦА "СКИДКИ" (Discount) --------------------------------
 
     private void editDiscountTableView() throws SQLException {
         TableView<Discount> table = new TableView<>();
@@ -376,6 +451,23 @@ public class GUI {
             aler.setContentText("Не выбрано ни одной строчки из таблицы !");
             aler.showAndWait();
         }
+    }
+
+    private void createDiscountClientTableView() throws SQLException {
+        TableView table = new TableView<>();
+        table.setColumnResizePolicy(TableView.CONSTRAINED_RESIZE_POLICY);
+
+        TableColumn<Client, Integer> idColumn = new TableColumn<>("id");
+        TableColumn<Client, Integer> releaseNumberColumn = new TableColumn<>("Процент скидки");
+        TableColumn<Client, String> clientFIO = new TableColumn<>("ФИО клиента");
+
+        idColumn.setCellValueFactory(new PropertyValueFactory<>("id"));
+        releaseNumberColumn.setCellValueFactory(new PropertyValueFactory<>("discount"));
+        clientFIO.setCellValueFactory(new PropertyValueFactory<>("name"));
+
+        mainTable.getColumns().setAll(idColumn, clientFIO, releaseNumberColumn);
+
+        mainTable.setItems(controller.buildDiscountClientData());
     }
 
 }

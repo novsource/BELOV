@@ -20,7 +20,7 @@ import java.sql.SQLException;
 
 public class AddWindow {
 
-    private Controller controller = new Controller();
+    private Controller controller;
 
     private GridPane gridPane;
     private Scene secondaryScene;

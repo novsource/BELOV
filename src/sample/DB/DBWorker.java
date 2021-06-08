@@ -87,6 +87,26 @@ public class DBWorker {
         return clientId;
     }
 
+    public String getClientFIO (int id) throws  SQLException {
+        Statement statement = connection.createStatement();
+        ResultSet resultSet = statement.executeQuery("SELECT client_FIO FROM Client WHERE client_id="+id);
+        String client_FIO = resultSet.getString(1);
+        resultSet.close();
+        statement.close();
+        return client_FIO;
+    }
+
+    public Discount getDiscountById(int id) throws SQLException {
+        Statement statement = connection.createStatement();
+        ResultSet resultSet = statement.executeQuery("SELECT discount_pers, criteria_id " +
+                "FROM Discount " +
+                "WHERE discount_id = "+id);
+        Discount discount = new Discount(0, resultSet.getInt(1), resultSet.getInt(2));
+        resultSet.close();
+        statement.close();
+        return discount;
+    }
+
     public static void addDiscount(Discount discount) throws SQLException {
         PreparedStatement preparedStatement = connection.prepareStatement("INSERT INTO Discount ('discount_pers', 'criteria_id')"
                 + "VALUES(?, ?)");
@@ -133,7 +153,7 @@ public class DBWorker {
         ArrayList<Discount> discounts = new ArrayList<Discount>();
         ResultSet resultSet = statement.executeQuery("SELECT * FROM Discount");
         while (resultSet.next()) {
-            discounts.add(new Discount(resultSet.getInt("discount_id"), resultSet.getInt("criteria_id"), resultSet.getInt("discount_pers")));
+            discounts.add(new Discount(resultSet.getInt("discount_id"), resultSet.getInt("discount_pers"), resultSet.getInt("criteria_id")));
         }
         resultSet.close();
         statement.close();
@@ -151,6 +171,61 @@ public class DBWorker {
         resultSet.close();
         statement.close();
         return criteriaList;
+    }
+
+    public List<Client> getDiscountsFromClient() throws SQLException {
+        Statement statement = connection.createStatement();
+        ArrayList<Client> clients = new ArrayList<>();
+
+        ResultSet resultSet = statement.executeQuery("SELECT client_id, \n" +
+                "CASE \n" +
+                "\tWHEN (SELECT discount_id FROM Discount \n" +
+                "\t\t\tWHERE (criteria_id = (SELECT criteria_id \n" +
+                "\t\t\t\t\t\t\t\t\tFROM Criteria \n" +
+                "\t\t\t\t\t\t\t\t\tWHERE(bill_payment < criteria_exists)))) \n" +
+                "\t\t\tTHEN (SELECT (discount_id-1) FROM Discount \n" +
+                "\t\t\t\t\tWHERE (criteria_id = (SELECT criteria_id \n" +
+                "\t\t\t\t\t\t\t\t\t\t\tFROM Criteria \n" +
+                "\t\t\t\t\t\t\t\t\t\t\tWHERE(bill_payment < criteria_exists)))) \n" +
+                "\tELSE \n" +
+                "\t\t(SELECT discount_id \n" +
+                "\t\tFROM Discount \n" +
+                "\t\tWHERE criteria_id =(SELECT criteria_id \n" +
+                "\t\t\t\t\t\t\tFROM Criteria \n" +
+                "\t\t\t\t\t\t\tWHERE criteria_exists = (SELECT MAX(criteria_exists) FROM Criteria)))\n" +
+                "\n" +
+                "END discount_id\n" +
+                "FROM Bill\n" +
+                "WHERE strftime('%s',bill_date) BETWEEN strftime('%s','now','-2 month') AND strftime('%s','now')\n");
+
+        while(resultSet.next()) {
+
+            Client client = new Client(resultSet.getInt(1), getClientFIO(resultSet.getInt(1)), getDiscountById(resultSet.getInt(2)));
+            clients.add(client);
+        }
+
+        return clients;
+    }
+
+    public List<Bill> getClientVisitsTwoMonths(Client client) throws SQLException{
+        Statement statement = connection.createStatement();
+
+        ArrayList bills = new ArrayList<>();
+
+        ResultSet resultSet = statement.executeQuery("SELECT bill_payment, bill_date\n" +
+                "FROM Bill\n" +
+                "WHERE strftime('%s',bill_date) BETWEEN strftime('%s','now','-2 month') AND strftime('%s','now') \n" +
+                "AND client_id ="+client.getId());
+
+        while(resultSet.next()) {
+            Bill bill = new Bill(client, resultSet.getString(2), resultSet.getInt(1));
+            bills.add(bill);
+        }
+
+        statement.close();
+        resultSet.close();
+
+        return bills;
     }
 
 }

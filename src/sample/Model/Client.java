@@ -6,6 +6,13 @@ public class Client {
     private Discount discount;
     private String phoneNumber;
 
+
+    public Client(int id, String name, Discount discount) {
+        this.id = id;
+        this.name = name;
+        this.discount = discount;
+    }
+
     public Client(int id, String name, String phoneNumber) {
         this.id = id;
         this.name = name;
