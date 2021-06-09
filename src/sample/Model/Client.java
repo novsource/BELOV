@@ -4,13 +4,14 @@ public class Client {
     private int id;
     private String name;
     private Discount discount;
+    private int discountPers;
     private String phoneNumber;
-
 
     public Client(int id, String name, Discount discount) {
         this.id = id;
         this.name = name;
         this.discount = discount;
+        this.discountPers = discount.getValue();
     }
 
     public Client(int id, String name, String phoneNumber) {
@@ -24,6 +25,7 @@ public class Client {
         this.name = name;
         this.discount = discount;
         this.phoneNumber = phoneNumber;
+        this.discountPers = discount.getValue();
     }
 
     public int getId() {
@@ -32,6 +34,14 @@ public class Client {
 
     public void setId(int id) {
         this.id = id;
+    }
+
+    public int getDiscountPers() {
+        return discountPers;
+    }
+
+    public void setDiscountPers(int discountPers) {
+        this.discountPers = discountPers;
     }
 
     public String getName() {

@@ -141,6 +141,7 @@ public class GUI {
     private VBox createNewMenu() {
         Menu file = new Menu("Файл");
         Menu edit = new Menu("Редактирование");
+        Menu addDiscount = new Menu("Скидки");
 
         // создаем пункты меню
 
@@ -155,6 +156,8 @@ public class GUI {
         MenuItem editMenu = new MenuItem("Изменить запись");
 
         MenuItem deleteMenuItem = new MenuItem("Удалить запись");
+
+        MenuItem addDisc = new MenuItem("Добавить скидки");
 
         //горячие клавиши
 
@@ -233,9 +236,28 @@ public class GUI {
             }
         });
 
+        addDisc.setOnAction(new EventHandler<ActionEvent>() {
+            @Override
+            public void handle(ActionEvent actionEvent) {
+                try {
+                    controller.addDiscountsToClients();
+
+                    Alert alert = new Alert(Alert.AlertType.CONFIRMATION);
+                    alert.setTitle("Успешно!");
+                    alert.setHeaderText(null);
+                    alert.setContentText("Скидки успешно начислены!");
+                    alert.showAndWait();
+
+                } catch (SQLException throwables) {
+                    throwables.printStackTrace();
+                }
+            }
+        });
+
         // добавить пункты меню в меню
         file.getItems().addAll(openMenu, separatorMenuItem, exit);
         edit.getItems().addAll(addMenu, editMenu, deleteMenuItem);
+        addDiscount.getItems().addAll(addDisc);
 
         // создаем меню
 
@@ -243,7 +265,7 @@ public class GUI {
 
         // добавить меню в меню
 
-        mb.getMenus().addAll(file, edit);
+        mb.getMenus().addAll(file, edit, addDiscount);
 
         // создаем VBox
 
@@ -333,34 +355,6 @@ public class GUI {
     //-------------------------------- ТАБЛИЦА "КЛИЕНТЫ" (clients)  --------------------------------
 
     private void editClientTableView() throws SQLException {
-
-       /* mainTable.setRowFactory(tv -> {
-            TableRow<Client> row = new TableRow<>();
-            row.setOnMouseClicked(mouseEvent -> {
-                if (mouseEvent.getClickCount() == 2 && (!row.isEmpty()) ) {
-                    Client client = row.getItem();
-                    VisitsWindow visitsWindow = new VisitsWindow(controller, client);
-                    try {
-                        Stage window = visitsWindow.VisitsWindow();
-
-                        window.initModality(Modality.WINDOW_MODAL);
-
-                        window.initOwner(primaryStage);
-
-                        window.setX(primaryStage.getX());
-                        window.setY(primaryStage.getY());
-
-                        window.show();
-                    }
-                    catch (SQLException throwables) {
-                        throwables.printStackTrace();
-                    }
-
-                }
-            });
-            return row;
-        });*/
-
         mainTable.setOnMousePressed(new EventHandler<MouseEvent>() {
             @Override
             public void handle(MouseEvent event) {
@@ -413,15 +407,13 @@ public class GUI {
     //-------------------------------- ТАБЛИЦА "СКИДКИ" (Discount) --------------------------------
 
     private void editDiscountTableView() throws SQLException {
-        TableView<Discount> table = new TableView<>();
-        table.setColumnResizePolicy(TableView.CONSTRAINED_RESIZE_POLICY);
+        mainTable.setColumnResizePolicy(TableView.CONSTRAINED_RESIZE_POLICY);
 
         TableColumn<Discount, Integer> idColumn = new TableColumn<>("id");
         TableColumn<Discount, Integer> releaseNumberColumn = new TableColumn<>("Процент скидки");
 
         idColumn.setCellValueFactory(new PropertyValueFactory<>("id"));
         releaseNumberColumn.setCellValueFactory(new PropertyValueFactory<>("value"));
-
 
         mainTable.getColumns().setAll(idColumn, releaseNumberColumn);
 
@@ -454,16 +446,15 @@ public class GUI {
     }
 
     private void createDiscountClientTableView() throws SQLException {
-        TableView table = new TableView<>();
-        table.setColumnResizePolicy(TableView.CONSTRAINED_RESIZE_POLICY);
+        mainTable.setColumnResizePolicy(TableView.CONSTRAINED_RESIZE_POLICY);
 
         TableColumn<Client, Integer> idColumn = new TableColumn<>("id");
-        TableColumn<Client, Integer> releaseNumberColumn = new TableColumn<>("Процент скидки");
         TableColumn<Client, String> clientFIO = new TableColumn<>("ФИО клиента");
+        TableColumn<Discount, Integer> releaseNumberColumn = new TableColumn<>("Процент скидки");
 
         idColumn.setCellValueFactory(new PropertyValueFactory<>("id"));
-        releaseNumberColumn.setCellValueFactory(new PropertyValueFactory<>("discount"));
         clientFIO.setCellValueFactory(new PropertyValueFactory<>("name"));
+        releaseNumberColumn.setCellValueFactory(new PropertyValueFactory<>("discountPers"));
 
         mainTable.getColumns().setAll(idColumn, clientFIO, releaseNumberColumn);
 

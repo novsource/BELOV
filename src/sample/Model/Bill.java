@@ -4,6 +4,7 @@ import java.util.List;
 
 public class Bill {
     private Client client;
+    private String clientName;
     private List<Dish> dishesList;
     private Discount discount;
     private int price;
@@ -13,6 +14,7 @@ public class Bill {
         this.client = client;
         this.date = date;
         this.price = price;
+        this.clientName = client.getName();
     }
 
     public Bill(Client client, List<Dish> dishesList, Discount discount, int price, String date) {
@@ -21,6 +23,7 @@ public class Bill {
         this.discount = discount;
         this.price = price;
         this.date = date;
+        this.clientName = client.getName();
     }
 
     public int getPrice() {
@@ -49,6 +52,14 @@ public class Bill {
 
     public Discount getDiscount() {
         return discount;
+    }
+
+    public String getClientName() {
+        return clientName;
+    }
+
+    public void setClientName(String clientName) {
+        this.clientName = clientName;
     }
 
     public void setDiscount(Discount discount) {

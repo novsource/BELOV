@@ -76,11 +76,11 @@ public class VisitsWindow {
 
         tableView.setColumnResizePolicy(TableView.CONSTRAINED_RESIZE_POLICY);
 
-        TableColumn<Client, String> nameColumn = new TableColumn<>("ФИО");
+        TableColumn<Bill, String> nameColumn = new TableColumn<>("ФИО");
         TableColumn<Bill, String> dateColumn = new TableColumn("Дата посещения");
         TableColumn<Bill, Integer> priceColumn = new TableColumn<>("Сумма чека");
 
-        nameColumn.setCellValueFactory(new PropertyValueFactory<>("client"));
+        nameColumn.setCellValueFactory(new PropertyValueFactory<>("clientName"));
         dateColumn.setCellValueFactory(new PropertyValueFactory<>("date"));
         priceColumn.setCellValueFactory(new PropertyValueFactory<>("price"));
 

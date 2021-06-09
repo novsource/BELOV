@@ -165,5 +165,11 @@ public class Controller {
         return this.discounts;
     }
 
-
+    public void addDiscountsToClients() throws SQLException{
+        List<Client> clients = dbWorker.getDiscountsFromClient();
+        for (Client client : clients) {
+            Discount discount = client.getDiscount();
+            dbWorker.setDiscountToClient(client, discount);
+        }
+    }
 }

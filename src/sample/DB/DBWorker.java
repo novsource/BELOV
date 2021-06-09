@@ -63,8 +63,8 @@ public class DBWorker {
     }
 
     public void editClient(Client client) throws SQLException {
-        PreparedStatement preparedStatement = connection.prepareStatement("UPDATE Client SET ('client_FIO', 'client_phone_number') = (?,?)\n" +
-                "WHERE client_id = " + client.getId());
+        PreparedStatement preparedStatement = connection.prepareStatement("UPDATE Client SET client_FIO = ?, client_phone_number = ? \n" +
+                " WHERE client_id = " + client.getId());
         preparedStatement.setString(1, client.getName());
         preparedStatement.setString(2, client.getPhoneNumber());
         preparedStatement.execute();
@@ -98,10 +98,10 @@ public class DBWorker {
 
     public Discount getDiscountById(int id) throws SQLException {
         Statement statement = connection.createStatement();
-        ResultSet resultSet = statement.executeQuery("SELECT discount_pers, criteria_id " +
+        ResultSet resultSet = statement.executeQuery("SELECT discount_id, discount_pers, criteria_id " +
                 "FROM Discount " +
                 "WHERE discount_id = "+id);
-        Discount discount = new Discount(0, resultSet.getInt(1), resultSet.getInt(2));
+        Discount discount = new Discount(resultSet.getInt(1), resultSet.getInt(2), resultSet.getInt(3));
         resultSet.close();
         statement.close();
         return discount;
@@ -118,8 +118,8 @@ public class DBWorker {
     }
 
     public static void editDiscount(Discount discount) throws SQLException {
-        PreparedStatement preparedStatement = connection.prepareStatement("UPDATE Discount SET ('discount_pers', 'criteria_id') = (?, ?) " +
-                "WHERE discount.id=" + discount.getId());
+        PreparedStatement preparedStatement = connection.prepareStatement("UPDATE Discount SET discount_pers = ?, criteria_id = ? " +
+                "WHERE discount_id=" + discount.getId());
 
         preparedStatement.setObject(1, discount.getValue());
         preparedStatement.setObject(2, discount.getCriteria());
@@ -179,14 +179,15 @@ public class DBWorker {
 
         ResultSet resultSet = statement.executeQuery("SELECT client_id, \n" +
                 "CASE \n" +
-                "\tWHEN (SELECT discount_id FROM Discount \n" +
+                "\tWHEN \n" +
+                "\t\t(SELECT discount_id FROM Discount \n" +
                 "\t\t\tWHERE (criteria_id = (SELECT criteria_id \n" +
                 "\t\t\t\t\t\t\t\t\tFROM Criteria \n" +
-                "\t\t\t\t\t\t\t\t\tWHERE(bill_payment < criteria_exists)))) \n" +
-                "\t\t\tTHEN (SELECT (discount_id-1) FROM Discount \n" +
-                "\t\t\t\t\tWHERE (criteria_id = (SELECT criteria_id \n" +
-                "\t\t\t\t\t\t\t\t\t\t\tFROM Criteria \n" +
-                "\t\t\t\t\t\t\t\t\t\t\tWHERE(bill_payment < criteria_exists)))) \n" +
+                "\t\t\t\t\t\t\t\t\tWHERE(bill_money < criteria_exists)))) \n" +
+                "\t\tTHEN (SELECT (discount_id-1) FROM Discount \n" +
+                "\t\t\t\tWHERE (criteria_id = (SELECT criteria_id \n" +
+                "\t\t\t\t\t\t\t\t\t\tFROM Criteria \n" +
+                "\t\t\t\t\t\t\t\t\t\tWHERE(bill_money < criteria_exists)))) \t\t\t\t\n" +
                 "\tELSE \n" +
                 "\t\t(SELECT discount_id \n" +
                 "\t\tFROM Discount \n" +
@@ -195,15 +196,16 @@ public class DBWorker {
                 "\t\t\t\t\t\t\tWHERE criteria_exists = (SELECT MAX(criteria_exists) FROM Criteria)))\n" +
                 "\n" +
                 "END discount_id\n" +
-                "FROM Bill\n" +
-                "WHERE strftime('%s',bill_date) BETWEEN strftime('%s','now','-2 month') AND strftime('%s','now')\n");
+                "FROM Client_Bill");
 
         while(resultSet.next()) {
-
-            Client client = new Client(resultSet.getInt(1), getClientFIO(resultSet.getInt(1)), getDiscountById(resultSet.getInt(2)));
-            clients.add(client);
+            if (resultSet.getInt(2) != 0) {
+                Client client = new Client(resultSet.getInt(1), getClientFIO(resultSet.getInt(1)), getDiscountById(resultSet.getInt(2)));
+                clients.add(client);
+            }
         }
-
+        resultSet.close();
+        statement.close();
         return clients;
     }
 
@@ -228,4 +230,9 @@ public class DBWorker {
         return bills;
     }
 
+    public void setDiscountToClient(Client client, Discount discount) throws SQLException{
+        PreparedStatement preparedStatement = connection.prepareStatement("UPDATE Client SET client_discount_id="+discount.getId()+" WHERE client_id="+client.getId());
+        preparedStatement.execute();
+        preparedStatement.close();
+    }
 }
